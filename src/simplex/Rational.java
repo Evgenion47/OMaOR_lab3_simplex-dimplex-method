@@ -37,8 +37,14 @@ public class Rational {
     }
 
     public Rational(int n, int d) throws ArithmeticException {
-        if (d == 0) throw new ArithmeticException("Деление на ноль, брат. Ты так не делай.");
+        if (d == 0) {
+            d = 1;
+            //throw new ArithmeticException("Деление на ноль, брат. Ты так не делай.");
+        }
         int divisor = gcd(Math.abs(n), Math.abs(d));
+        if (divisor == 0) {
+            throw new ArithmeticException("Переделывай");
+        }
         this.n = n / divisor;
         this.d = d / divisor;
         if (this.n < 0) {
