@@ -162,7 +162,7 @@ public class SimplexMethod {
                 for (int i = 0; i < n; ++i) {
                     Object[] tableLine = new Object[2 * n + 4];
                     tableLine[0] = CpCj[i];
-                    tableLine[1] = basisNumbers[i];
+                    tableLine[1] = String.format("X%d", basisNumbers[i]);
                     tableLine[2] = y0[i];
                     System.arraycopy(a[i], 0, tableLine, 3, 2 * n);
                     tableLine[2 * n + 3] = " ";
@@ -225,7 +225,7 @@ public class SimplexMethod {
             for (int i = 0; i < n; ++i) {
                 Object[] tableLine = new Object[2 * n + 4];
                 tableLine[0] = CpCj[i];
-                tableLine[1] = basisNumbers[i];
+                tableLine[1] = String.format("X%d", basisNumbers[i]);
                 tableLine[2] = y0[i];
                 System.arraycopy(a[i], 0, tableLine, 3, 2 * n);
                 tableLine[2 * n + 3] = minArray[i].getSign() < 0 ? "-" : minArray[i];
