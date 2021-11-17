@@ -3,14 +3,10 @@
  * |_|>    Created by Dimyasha on 11.11.2021
  * |_|>
  */
-
 package simplex;
 
 import UTFE.TableOutput.Table;
-import jdk.jshell.execution.Util;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class SimplexMethod {
 
@@ -41,7 +37,8 @@ public class SimplexMethod {
     }
 
     public Rational Invoke() {
-        System.out.println("SimplexMethod.Invoke");
+        System.out.println("===================================================================");
+
         //вывод целевой функции
         StringBuilder sb = new StringBuilder("F(X) = ");
         for (int i = 0; i < n; ++i) {
@@ -140,7 +137,7 @@ public class SimplexMethod {
                 if (Rational.compare(delta[j], new Rational(0, 1)) > 0) isDeltaNegativeOrNull = false;
             }
 
-            //выводим значение функции от текущего плана
+            //собираем строку функции текущего плана
             sb = new StringBuilder("F(X" + planNumber + ") = ");
             Rational fx = new Rational(0, 1);
             for (int i = 0; i < 2 * n; ++i) {
@@ -153,31 +150,40 @@ public class SimplexMethod {
                 }
                 Rational y = new Rational(0, 1);
                 if (tmp != -1) y = y0[tmp];
-                sb.append(String.format("%d * %s", c[i], y.toString()));
+                sb.append(String.format("%d*%s", c[i], y.toString()));
                 if (i != 2 * n - 1) sb.append(" + ");
                 fx = Rational.add(fx, new Rational(y.getN() * c[i], y.getD()));
             }
-            if (print) {
-                System.out.println(sb);
-                System.out.println("F(X" + planNumber + ") = " + fx);
-            }
-
-            /*//выводим значение функции от текущего плана
-            sb = new StringBuilder("F(X" + planNumber + ") = ");
-            Rational fx = new Rational(0, 1);
-            for (int i = 0; i < n; ++i) {
-                sb.append(String.format("%d * %s", c[basisNumbers[i] - 1], y0[i].toString()));
-                if (i != n - 1) sb.append(" + ");
-                fx = Rational.add(fx, new Rational(y0[i].getN() * c[basisNumbers[i] - 1], y0[i].getD()));
-            }
-            if (print) {
-                System.out.println(sb);
-                System.out.println("F(X" + planNumber + ") = " + fx);
-            }*/
 
             //выход из цикла, если все дельты не положительные
             if (isDeltaNegativeOrNull) {
-                //todo вывод части таблицы
+
+                //вывод последней неполной таблицы
+                for (int i = 0; i < n; ++i) {
+                    Object[] tableLine = new Object[2 * n + 4];
+                    tableLine[0] = CpCj[i];
+                    tableLine[1] = basisNumbers[i];
+                    tableLine[2] = y0[i];
+                    System.arraycopy(a[i], 0, tableLine, 3, 2 * n);
+                    tableLine[2 * n + 3] = " ";
+                    table.add(tableLine);
+                }
+                Object[] deltaLine = new Object[2 * n + 4];
+                for (int i = 0; i < 2 * n + 3; ++i) {
+                    if (i < 3) deltaLine[i] = " ";
+                    else deltaLine[i] = delta[i - 3];
+                }
+                deltaLine[1] = "Δ";
+                table.add(deltaLine);
+
+                if (print) System.out.println(Table.TableToString(table.toArray(Object[][]::new)));
+
+                //вывод последнего плана
+                if (print) {
+                    System.out.println(sb);
+                    System.out.println("F(X" + planNumber + ") = " + fx);
+                    System.out.println("Answer: " + fx);
+                }
 
                 return fx;
             }
@@ -191,11 +197,6 @@ public class SimplexMethod {
                 }
             }
 
-            /*System.out.println("column = " + column);
-            System.out.println("delta = " + Arrays.toString(delta));
-            System.out.println("y0 = " + Arrays.toString(y0));
-            System.out.println("a = " + Arrays.deepToString(a).replaceAll("], ", "],\n"));
-*/
             //считаем столбец min
             for (int i = 0; i < n; ++i)
                 if (Rational.compare(a[i][column], new Rational(0, 1)) == 0) {
@@ -244,6 +245,13 @@ public class SimplexMethod {
             table.add(deltaLine);
             table.add(epsLine);
             if (print) System.out.println(Table.TableToString(table.toArray(Object[][]::new)));
+
+            //вывод плана
+            if (print) {
+                System.out.println(sb);
+                System.out.println("F(X" + planNumber + ") = " + fx);
+                System.out.println();
+            }
 
             //временные массивы для новой таблицы
             Rational[][] aNew = new Rational[n][n * 2];

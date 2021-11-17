@@ -13,7 +13,6 @@ public class Rational {
     private int n;
     private int d;
 
-    //todo использовать getter's, а не обращаться к полям
     public int getSign() {
         return sign;
     }
@@ -37,14 +36,9 @@ public class Rational {
     }
 
     public Rational(int n, int d) throws ArithmeticException {
-        if (d == 0) {
-            d = 1;
-            //throw new ArithmeticException("Деление на ноль, брат. Ты так не делай.");
-        }
+        if (d == 0) d = 1;
         int divisor = gcd(Math.abs(n), Math.abs(d));
-        if (divisor == 0) {
-            throw new ArithmeticException("Переделывай");
-        }
+        if (divisor == 0) throw new ArithmeticException("Все круто, но на ноль делить нельзя");
         this.n = n / divisor;
         this.d = d / divisor;
         if (this.n < 0) {
@@ -96,7 +90,6 @@ public class Rational {
         return new Rational(x.n * y.d, x.d * y.n, x.sign == y.sign ? 1 : -1);
     }
 
-
     @Override
     public String toString() {
         int up = n;
@@ -112,7 +105,7 @@ public class Rational {
             /*output += "\n" + "-".repeat(Math.max(((Integer) up).toString().length(),
                     ((Integer) down).toString().length()));
             output += String.format("\n%d", down);*/
-            output +=String.format("/%d", down);
+            output += String.format("/%d", down);
         }
         return output;
     }
