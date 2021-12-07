@@ -1,8 +1,3 @@
-/**
- * |_|>
- * |_|>    Created by Dimyasha on 11.11.2021
- * |_|>
- */
 package simplex;
 
 import UTFE.TableOutput.Table;
@@ -10,7 +5,6 @@ import java.util.ArrayList;
 
 public class SimplexMethod {
 
-    //todo сделать n * m, a не n * n
 
     int n; //число переменных
     int m; //число уравнений
@@ -36,7 +30,7 @@ public class SimplexMethod {
         this.print = print;
     }
 
-    public Rational Invoke() {
+    public Double Invoke() {
         System.out.println("===================================================================");
 
         //вывод целевой функции
@@ -71,17 +65,17 @@ public class SimplexMethod {
         int[] c = new int[n * 2];
         System.arraycopy(cInput, 0, c, 0, n);
 
-        //заполянем массив a дробями
-        Rational[][] a = new Rational[n][n * 2];
+        //заполянем массив a
+        Double[][] a = new Double[n][n * 2];
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
-                a[i][j] = new Rational(aInput[i][j], 1);
+                a[i][j] = (double)aInput[i][j];
             }
         }
         for (int i = 0; i < n; ++i) {
             for (int j = n; j < n * 2; ++j) {
-                a[i][j] = new Rational(0, 1);
-                if (i == j - n) a[i][j] = new Rational(1, 1);
+                a[i][j] = 0.0;
+                if (i == j - n) a[i][j] = 1.0;
             }
         }
 
@@ -96,13 +90,13 @@ public class SimplexMethod {
         int planNumber = -1;
 
         //заполняем столбец y0
-        Rational[] y0 = new Rational[n];
-        for (int i = 0; i < n; ++i) y0[i] = new Rational(bInput[i], 1);
+        Double[] y0 = new Double[n];
+        for (int i = 0; i < n; ++i) y0[i] = (double)bInput[i];
 
         //создаем массивы min, delta и epsilon
-        Rational[] minArray = new Rational[n];
-        Rational[] delta = new Rational[n * 2];
-        Rational[] epsilon = new Rational[n * 2 + 1];
+        Double[] minArray = new Double[n];
+        Double[] delta = new Double[n * 2];
+        Double[] epsilon = new Double[n * 2 + 1];
 
         //переменные для опорного столбца и строки
         int column = 0;
@@ -129,17 +123,17 @@ public class SimplexMethod {
             //считаем дельту
             boolean isDeltaNegativeOrNull = true;
             for (int j = 0; j < n * 2; ++j) {
-                Rational sum = new Rational(0, 1);
+                double sum = 0;
                 for (int i = 0; i < n; ++i) {
-                    sum = Rational.add(sum, Rational.mul(new Rational(CpCj[i], 1), a[i][j]));
+                    sum = sum+CpCj[i]*a[i][j];
                 }
-                delta[j] = Rational.sub(new Rational(c[j], 1), sum);
-                if (Rational.compare(delta[j], new Rational(0, 1)) > 0) isDeltaNegativeOrNull = false;
+                delta[j] = c[j]-sum;
+                if (Double.compare(delta[j], 0) > 0) isDeltaNegativeOrNull = false;
             }
 
             //собираем строку функции текущего плана
             sb = new StringBuilder("F(X" + planNumber + ") = ");
-            Rational fx = new Rational(0, 1);
+            double fx = 0;
             for (int i = 0; i < 2 * n; ++i) {
                 int tmp = -1;
                 for (int j = 0; j < n; ++j) {
@@ -148,11 +142,11 @@ public class SimplexMethod {
                         break;
                     }
                 }
-                Rational y = new Rational(0, 1);
+                Double y = (double)0;
                 if (tmp != -1) y = y0[tmp];
                 sb.append(String.format("%d*%s", c[i], y.toString()));
                 if (i != 2 * n - 1) sb.append(" + ");
-                fx = Rational.add(fx, new Rational(y.getN() * c[i], y.getD()));
+                fx = fx + (y * c[i]);
             }
 
             //выход из цикла, если все дельты не положительные
@@ -189,9 +183,9 @@ public class SimplexMethod {
             }
 
             //ищем опорный столбец по delta
-            Rational max = delta[0];
+            Double max = delta[0];
             for (int i = 0; i < n * 2; ++i) {
-                if (Rational.compare(max, delta[i]) < 0) {
+                if (Double.compare(max, delta[i]) < 0) {
                     max = delta[i];
                     column = i;
                 }
@@ -199,26 +193,25 @@ public class SimplexMethod {
 
             //считаем столбец min
             for (int i = 0; i < n; ++i)
-                if (Rational.compare(a[i][column], new Rational(0, 1)) == 0) {
-                    minArray[i] = new Rational(-1, 1);
+                if (Double.compare(a[i][column], 0) == 0) {
+                    minArray[i] = -1.0;
                 } else {
-                    minArray[i] = Rational.div(y0[i], a[i][column]);
+                    minArray[i] = y0[i]/ a[i][column];
                 }
 
             //ищем опорную строку по min
-            Rational min = new Rational(Integer.MAX_VALUE, 1);
+            Double min = Double.MAX_VALUE;
             for (int i = 0; i < n; ++i) {
-                if (Rational.compare(min, minArray[i]) > 0 &&
-                        Rational.compare(minArray[i], new Rational(0, 1)) > 0) {
+                if (Double.compare(min, minArray[i]) > 0 && Double.compare(minArray[i], 0) > 0) {
                     min = minArray[i];
                     line = i;
                 }
             }
 
             //считаем epsilon
-            epsilon[0] = Rational.div(y0[line], a[line][column]);
+            epsilon[0] = y0[line]/ a[line][column];
             for (int i = 0; i < n * 2; ++i) {
-                epsilon[i + 1] = Rational.div(a[line][i], a[line][column]);
+                epsilon[i + 1] = a[line][i]/ a[line][column];
             }
 
             //переписываем все в таблицу
@@ -228,7 +221,7 @@ public class SimplexMethod {
                 tableLine[1] = String.format("X%d", basisNumbers[i]);
                 tableLine[2] = y0[i];
                 System.arraycopy(a[i], 0, tableLine, 3, 2 * n);
-                tableLine[2 * n + 3] = minArray[i].getSign() < 0 ? "-" : minArray[i];
+                tableLine[2 * n + 3] = minArray[i]< 0 ? "-" : minArray[i];
                 table.add(tableLine);
             }
             Object[] deltaLine = new Object[2 * n + 4];
@@ -254,8 +247,8 @@ public class SimplexMethod {
             }
 
             //временные массивы для новой таблицы
-            Rational[][] aNew = new Rational[n][n * 2];
-            Rational[] y0New = new Rational[n];
+            Double[][] aNew = new Double[n][n * 2];
+            Double[] y0New = new Double[n];
             int[] bNumbersNew = new int[n];
             int[] cpcjNew = new int[n];
 
@@ -268,10 +261,10 @@ public class SimplexMethod {
 
             //строим столбец y0 и матрицу a
             for (int i = 0; i < n; ++i) {
-                y0New[i] = Rational.sub(y0[i], Rational.mul(y0[line], Rational.div(a[i][column], a[line][column])));
+                y0New[i] = y0[i]-y0[line]*a[i][column]/ a[line][column];
                 for (int j = 0; j < n * 2; ++j) {
-                    aNew[i][j] = Rational.sub(a[i][j], Rational.mul(a[line][j], Rational.div(a[i][column], a[line][column])));
-                    if (j == column) aNew[i][j] = new Rational(0, 1);
+                    aNew[i][j] = a[i][j]-a[line][j]*a[i][column]/ a[line][column];
+                    if (j == column) aNew[i][j] = 0.0;
                 }
             }
             y0New[line] = epsilon[0];
